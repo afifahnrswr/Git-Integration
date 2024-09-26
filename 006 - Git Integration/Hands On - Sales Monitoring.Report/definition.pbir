@@ -1,0 +1,9 @@
+{
+  "version": "4.0",
+  "datasetReference": {
+    "byPath": {
+      "path": "../Hands On - Sales Monitoring.SemanticModel"
+    },
+    "byConnection": null
+  }
+}
