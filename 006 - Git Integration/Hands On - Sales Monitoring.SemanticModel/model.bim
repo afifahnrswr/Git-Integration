@@ -4,7 +4,7 @@
     "annotations": [
       {
         "name": "PBI_QueryOrder",
-        "value": "[\"Sales Data\",\"Sample File\",\"Parameter1\",\"Transform Sample File\",\"Transform File\",\"SKU1\",\"Customer\"]"
+        "value": "[\"Sales Data\",\"Sample File\",\"Parameter1\",\"Transform File\",\"SKU1\",\"Customer\",\"Errors in Sales Data\"]"
       },
       {
         "name": "__PBI_TimeIntelligenceEnabled",
@@ -12,7 +12,7 @@
       },
       {
         "name": "PBIDesktopVersion",
-        "value": "2.132.1053.0 (24.08)"
+        "value": "2.135.7627.0 (24.08)"
       },
       {
         "name": "PBI_ProTooling",
@@ -44,11 +44,15 @@
           {
             "name": "PBI_ResultType",
             "value": "Binary"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
           }
         ],
         "expression": [
           "let",
-          "    Source = Folder.Files(\"C:\\Users\\afifah064126\\Documents\\Academy - Day 3\\Data\"),",
+          "    Source = Folder.Files(\"C:\\Users\\afifah064126\\Astra International Tbk, PT\\Business Analytics Team 2023 - Documents\\General\\Teams Workspace\\[000] Astra Academy\\Hands On\\Data Sample\\Data\"),",
           "    Navigation1 = Source{0}[Content]",
           "in",
           "    Navigation1"
@@ -71,30 +75,15 @@
         "queryGroup": "Transform File from Data\\Helper Queries"
       },
       {
-        "name": "Transform Sample File",
-        "annotations": [
-          {
-            "name": "PBI_ResultType",
-            "value": "Table"
-          }
-        ],
-        "expression": [
-          "let",
-          "    Source = Csv.Document(Parameter1,[Delimiter=\";\", Columns=13, Encoding=1252, QuoteStyle=QuoteStyle.None]),",
-          "    #\"Promoted Headers\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true])",
-          "in",
-          "    #\"Promoted Headers\""
-        ],
-        "kind": "m",
-        "lineageTag": "bbfadaf7-8a9d-4bbc-8241-1a924d7b4c28",
-        "queryGroup": "Transform File from Data"
-      },
-      {
         "name": "Transform File",
         "annotations": [
           {
             "name": "PBI_ResultType",
             "value": "Function"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
           }
         ],
         "expression": [
@@ -109,8 +98,36 @@
         ],
         "kind": "m",
         "lineageTag": "e277d235-ef23-4247-a7f6-7b72137b5b63",
-        "mAttributes": "[ FunctionQueryBinding = \"{\"\"exemplarFormulaName\"\":\"\"Transform Sample File\"\"}\" ]",
         "queryGroup": "Transform File from Data\\Helper Queries"
+      },
+      {
+        "name": "Errors in Sales Data",
+        "annotations": [
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
+          }
+        ],
+        "expression": [
+          "let",
+          "Source = #\"Sales Data\",",
+          "  #\"Detected Type Mismatches\" = let",
+          "    tableWithOnlyPrimitiveTypes = Table.SelectColumns(Source, Table.ColumnsOfType(Source, {type nullable number, type nullable text, type nullable logical, type nullable date, type nullable datetime, type nullable datetimezone, type nullable time, type nullable duration})),",
+          "    recordTypeFields = Type.RecordFields(Type.TableRow(Value.Type(tableWithOnlyPrimitiveTypes))),",
+          "    fieldNames = Record.FieldNames(recordTypeFields),",
+          "    fieldTypes = List.Transform(Record.ToList(recordTypeFields), each [Type]),",
+          "    pairs = List.Transform(List.Positions(fieldNames), (i) => {fieldNames{i}, (v) => if v = null or Value.Is(v, fieldTypes{i}) then v else error [Message = \"The type of the value does not match the type of the column.\", Detail = v], fieldTypes{i}})",
+          "in",
+          "    Table.TransformColumns(Source, pairs),",
+          "  #\"Added Index\" = Table.AddIndexColumn(#\"Detected Type Mismatches\", \"Row Number\" ,1),",
+          "  #\"Kept Errors\" = Table.SelectRowsWithErrors(#\"Added Index\", {\"Order ID\", \"Customer ID\", \"SalesPerson\", \"Order Date\", \"Ship Date\", \"Order Priority\", \"SKU\", \"Order Quantity\", \"Unit Sell Price\", \"Discount\", \"Shipping Amount\", \"Ship Mode\", \"Product Container\", \"Sales Amount\", \"Days to Ship\"}),",
+          "  #\"Reordered Columns\" = Table.ReorderColumns(#\"Kept Errors\", {\"Row Number\", \"Order ID\", \"Customer ID\", \"SalesPerson\", \"Order Date\", \"Ship Date\", \"Order Priority\", \"SKU\", \"Order Quantity\", \"Unit Sell Price\", \"Discount\", \"Shipping Amount\", \"Ship Mode\", \"Product Container\", \"Sales Amount\", \"Days to Ship\"})",
+          "in",
+          "  #\"Reordered Columns\""
+        ],
+        "kind": "m",
+        "lineageTag": "1848915f-0f03-4907-b3e8-2ac7254f4f62",
+        "queryGroup": "Query Errors - 9/30/2024 11:10:02 AM"
       }
     ],
     "queryGroups": [
@@ -131,6 +148,16 @@
           }
         ],
         "folder": "Transform File from Data\\Helper Queries"
+      },
+      {
+        "annotations": [
+          {
+            "name": "PBI_QueryGroupOrder",
+            "value": "2"
+          }
+        ],
+        "description": "Errors in queries that were loaded on 9/30/2024 11:10:02 AM.",
+        "folder": "Query Errors - 9/30/2024 11:10:02 AM"
       }
     ],
     "relationships": [
@@ -476,13 +503,13 @@
             "source": {
               "expression": [
                 "let",
-                "    Source = Folder.Files(\"C:\\Users\\afifah064126\\Documents\\Academy - Day 3\\Data\"),",
+                "    Source = Folder.Files(\"C:\\Users\\afifah064126\\Astra International Tbk, PT\\Business Analytics Team 2023 - Documents\\General\\Teams Workspace\\[000] Astra Academy\\Hands On\\Data Sample\\Data\"),",
                 "    #\"Filtered Hidden Files1\" = Table.SelectRows(Source, each [Attributes]?[Hidden]? <> true),",
                 "    #\"Invoke Custom Function1\" = Table.AddColumn(#\"Filtered Hidden Files1\", \"Transform File\", each #\"Transform File\"([Content])),",
                 "    #\"Renamed Columns1\" = Table.RenameColumns(#\"Invoke Custom Function1\", {\"Name\", \"Source.Name\"}),",
                 "    #\"Removed Other Columns1\" = Table.SelectColumns(#\"Renamed Columns1\", {\"Source.Name\", \"Transform File\"}),",
-                "    #\"Expanded Table Column1\" = Table.ExpandTableColumn(#\"Removed Other Columns1\", \"Transform File\", Table.ColumnNames(#\"Transform File\"(#\"Sample File\"))),",
-                "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Expanded Table Column1\",{{\"Source.Name\", type text}, {\"Order ID\", Int64.Type}, {\"Customer ID\", type text}, {\"SalesPerson\", type text}, {\"Order Date\", type date}, {\"Order Priority\", type text}, {\"SKU\", type text}, {\"Order Quantity\", Int64.Type}, {\"Unit Sell Price\", type number}, {\"Discount\", type number}, {\"Shipping Amount\", type number}, {\"Ship Mode\", type text}, {\"Product Container\", type text}, {\"Ship Date\", type date}}),",
+                "    #\"Expanded Transform File\" = Table.ExpandTableColumn(#\"Removed Other Columns1\", \"Transform File\", {\"Order ID\", \"Customer ID\", \"SalesPerson\", \"Order Date\", \"Order Priority\", \"SKU\", \"Order Quantity\", \"Unit Sell Price\", \"Discount\", \"Shipping Amount\", \"Ship Mode\", \"Product Container\", \"Ship Date.\"}, {\"Order ID\", \"Customer ID\", \"SalesPerson\", \"Order Date\", \"Order Priority\", \"SKU\", \"Order Quantity\", \"Unit Sell Price\", \"Discount\", \"Shipping Amount\", \"Ship Mode\", \"Product Container\", \"Ship Date\"}),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Expanded Transform File\",{{\"Source.Name\", type text}, {\"Order ID\", Int64.Type}, {\"Customer ID\", type text}, {\"SalesPerson\", type text}, {\"Order Date\", type date}, {\"Order Priority\", type text}, {\"SKU\", type text}, {\"Order Quantity\", Int64.Type}, {\"Unit Sell Price\", type number}, {\"Discount\", type number}, {\"Shipping Amount\", type number}, {\"Ship Mode\", type text}, {\"Product Container\", type text}, {\"Ship Date\", type date}}),",
                 "    #\"Removed Columns\" = Table.RemoveColumns(#\"Changed Type\",{\"Source.Name\"}),",
                 "    #\"Reordered Columns\" = Table.ReorderColumns(#\"Removed Columns\",{\"Order ID\", \"Customer ID\", \"SalesPerson\", \"Order Date\", \"Ship Date\", \"Order Priority\", \"SKU\", \"Order Quantity\", \"Unit Sell Price\", \"Discount\", \"Shipping Amount\", \"Ship Mode\", \"Product Container\"}),",
                 "    #\"Inserted Multiplication\" = Table.AddColumn(#\"Reordered Columns\", \"Multiplication\", each List.Product({1-[Discount], [Unit Sell Price], [Order Quantity]})),",
@@ -1132,6 +1159,10 @@
           {
             "name": "PBI_ResultType",
             "value": "Table"
+          },
+          {
+            "name": "PBI_NavigationStepName",
+            "value": "Navigation"
           }
         ],
         "columns": [
@@ -1170,7 +1201,7 @@
             "source": {
               "expression": [
                 "let",
-                "    Source = Excel.Workbook(File.Contents(\"C:\\Users\\afifah064126\\Documents\\Academy - Day 3\\Master\\01 SKU .xlsx\"), null, true),",
+                "    Source = Excel.Workbook(File.Contents(\"C:\\Users\\afifah064126\\Astra International Tbk, PT\\Business Analytics Team 2023 - Documents\\General\\Teams Workspace\\[000] Astra Academy\\Hands On\\Data Sample\\Master\\IND\\01 SKU.xlsx\"), null, true),",
                 "    SKU_Table = Source{[Item=\"SKU\",Kind=\"Table\"]}[Data],",
                 "    #\"Changed Type\" = Table.TransformColumnTypes(SKU_Table,{{\"SKU\", type text}, {\"Category\", type text}})",
                 "in",
@@ -1242,7 +1273,7 @@
             "source": {
               "expression": [
                 "let",
-                "    Source = Excel.Workbook(File.Contents(\"C:\\Users\\afifah064126\\Documents\\Academy - Day 3\\Master\\02 Customer.xlsx\"), null, true),",
+                "    Source = Excel.Workbook(File.Contents(\"C:\\Users\\afifah064126\\Astra International Tbk, PT\\Business Analytics Team 2023 - Documents\\General\\Teams Workspace\\[000] Astra Academy\\Hands On\\Data Sample\\Master\\IND\\02 Customer.xlsx\"), null, true),",
                 "    Customer_Sheet = Source{[Item=\"Customer\",Kind=\"Sheet\"]}[Data],",
                 "    #\"Changed Type\" = Table.TransformColumnTypes(Customer_Sheet,{{\"Column1\", type text}, {\"Column2\", type text}, {\"Column3\", type text}}),",
                 "    #\"Promoted Headers\" = Table.PromoteHeaders(#\"Changed Type\", [PromoteAllScalars=true]),",
